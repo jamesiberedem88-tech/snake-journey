@@ -19,6 +19,6 @@ Snake journey gme is a C++ console-game based where the player controls a snake,
 - Q - quit
 
 ## Author
-Bennet otoho
+Bennet Otoho
 Iberedem james
-ifi
+Ifiokobong Godwin
