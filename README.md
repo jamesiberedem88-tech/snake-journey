@@ -47,6 +47,6 @@ the body of the snake
 
 ## Build Commands
 - cmake -B build -S ( to generate build file)
-- g++ main.cpp -o program ( to build the program)
+- cmake --build build (to build the application)
 - program_name.exe
 
