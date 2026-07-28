@@ -45,3 +45,8 @@ the body of the snake
 ## Finished application demo (full barrier mode):
  https://www.youtube.com/watch?v=DT9aPT-MVTU
 
+## Build Commands
+- cmake -B build -S ( to generate build file)
+- g++ main.cpp -o program ( to build the program)
+- program_name.exe
+
