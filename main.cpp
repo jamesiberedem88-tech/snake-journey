@@ -9,22 +9,26 @@ int main(int argc, char** argv) {
 	using namespace ftxui;
  
   std::vector<std::string> entries = {
-      "Start",
-      "Continue",
-      "HighScore",
-      "Instructions",
-      "Exit",
-         
+    "Start",
+    "Continue",
+    "HighScore",
+    "Instructions",
+    "Exit"
   };
   int selected = 0;
  
   auto app = App::TerminalOutput();
   MenuOption option;
-  option.on_enter = app.ExitLoopClosure();
   auto menu = Menu(&entries, &selected, option);
  
   // You can decorate components using the pipe operator.
-  auto component = menu | border;
+  auto component = menu | border | CatchEvent([&](Event event) {
+    if (event == Event::Return && selected == 4) {
+      app.Exit();
+      return true;
+    }
+    return false;
+  });
  
   // Start the main loop
   app.Loop(component);
