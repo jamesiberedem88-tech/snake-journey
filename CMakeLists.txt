@@ -14,6 +14,10 @@ add_executable(SnakeJourney)
 target_sources(SnakeJourney
   PRIVATE
     main.cpp
+    screens/menu_screen.cpp
+    screens/game_screen.cpp
+    screens/menu_screen.hpp
+    screens/game_screen.hpp
 )
 target_link_libraries(SnakeJourney
   PRIVATE ftxui::screen
