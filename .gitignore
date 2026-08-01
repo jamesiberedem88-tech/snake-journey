@@ -1,10 +1,10 @@
-main.exe 
+main.exe
+.cache
 .vscode/tasks.json
 .vscode/c_cpp_properties.json
 
 # CMake
 build
-
 
 # macOS template
 .DS_Store

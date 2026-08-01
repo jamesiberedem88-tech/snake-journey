@@ -1,5 +1,9 @@
+#include <iostream>
+#include <vector>
+
 #include <ftxui/component/component.hpp>
 #include <ftxui/component/app.hpp>
+#include <ftxui/dom/elements.hpp>
 
 using namespace ftxui;
  
@@ -11,11 +15,10 @@ std::vector<std::string> entries = {
   "Exit"
 };
 int selected = 0;
-MenuOption option;
-auto menu = Menu(&entries, &selected, option);
+auto menu = Menu(&entries, &selected);
 
 Component menu_screen(App& app, int* current_screen) {
-  return menu | border | CatchEvent([&](Event event) {
+  return menu | border | CatchEvent([&app, current_screen](Event event) {
     if (selected == 4 && event == Event::Return) {
       app.Exit();
       return true;

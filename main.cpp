@@ -1,3 +1,5 @@
+#include <vector>
+
 #include <ftxui/component/component.hpp>
 #include <ftxui/component/app.hpp>
 #include <ftxui/dom/elements.hpp>
@@ -19,13 +21,14 @@ int main(int argc, char** argv) {
   }, &selected);
 
   auto component = CatchEvent(container, [&](Event event) {
-    if (selected == 1 && event == Event::q) {
-      selected = 0;
+    if (event == Event::q) {
+      if (selected > 0) selected = 0;
+      else app.Exit();
       return true;
     }
     return false;
   });
- 
+
   // Start the main loop
   app.Loop(component);
 	
