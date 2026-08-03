@@ -5,6 +5,8 @@
 #include <ftxui/component/app.hpp>
 #include <ftxui/dom/elements.hpp>
 
+#include "game_screen.hpp"
+
 using namespace ftxui;
  
 std::vector<std::string> entries = {
@@ -26,6 +28,7 @@ Component menu_screen(App& app, int* current_screen) {
 
     if ((selected == 0 || selected == 1) && event == Event::Return) {
       *current_screen = 1;
+      start_game(&app);
       return true;
     }
 

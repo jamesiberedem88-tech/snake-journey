@@ -5,3 +5,5 @@
 using namespace ftxui;
 
 Component game_screen(App& app);
+void start_game(App* app);
+void stop_game();

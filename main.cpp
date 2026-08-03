@@ -22,7 +22,10 @@ int main(int argc, char** argv) {
 
   auto component = CatchEvent(container, [&](Event event) {
     if (event == Event::q) {
-      if (selected > 0) selected = 0;
+      if (selected > 0) {
+        if (selected < 2) stop_game();
+        selected = 0;
+      }
       else app.Exit();
       return true;
     }
