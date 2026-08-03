@@ -6,6 +6,8 @@
 
 #include "screens/menu_screen.hpp"
 #include "screens/game_screen.hpp"
+#include "screens/instructions_screen.hpp"
+ 
 
 /* run this program using the console pauser or add your own getch, system("pause") or input loop */
 
@@ -17,7 +19,8 @@ int main(int argc, char** argv) {
   int selected = 0;
   auto container = Container::Tab({
     menu_screen(app, &selected),
-    game_screen(app)
+    game_screen(app),
+    instructions_screen(app, &selected) 
   }, &selected);
 
   auto component = CatchEvent(container, [&](Event event) {
@@ -28,6 +31,8 @@ int main(int argc, char** argv) {
     }
     return false;
   });
+
+
 
   // Start the main loop
   app.Loop(component);

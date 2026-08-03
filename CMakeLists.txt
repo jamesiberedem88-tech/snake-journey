@@ -18,6 +18,8 @@ target_sources(SnakeJourney
     screens/game_screen.cpp
     screens/menu_screen.hpp
     screens/game_screen.hpp
+    screens/instructions_screen.cpp
+    screens/instructions_screen.hpp
 )
 target_link_libraries(SnakeJourney
   PRIVATE ftxui::screen

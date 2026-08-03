@@ -29,6 +29,11 @@ Component menu_screen(App& app, int* current_screen) {
       return true;
     }
 
+    if (selected == 3 && event == Event::Return) {
+      *current_screen = 2;
+      return true;  
+    }
+
     return false;
   });
 }

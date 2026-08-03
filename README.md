@@ -48,7 +48,7 @@ the body of the snake
 ## Build Commands
 - cmake -B build -S ( to generate build file)
 - cmake --build build (to build the application)
-- programname.exe  (to run the program)
+- snakeJourney.exe(to run the program)
 
 ## Game menu
 -
