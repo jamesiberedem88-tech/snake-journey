@@ -6,6 +6,7 @@
 
 #include "screens/menu_screen.hpp"
 #include "screens/game_screen.hpp"
+#include "screens/instruction_screen.hpp"
 
 /* run this program using the console pauser or add your own getch, system("pause") or input loop */
 
