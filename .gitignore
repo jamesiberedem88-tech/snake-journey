@@ -6,6 +6,10 @@ main.exe
 # CMake
 build
 
+# Dev-C++ IDE
+Makefile.win
+*.layout
+
 # macOS template
 .DS_Store
 .AppleDouble
