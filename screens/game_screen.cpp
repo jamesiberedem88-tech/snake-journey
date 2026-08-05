@@ -12,6 +12,8 @@ using namespace ftxui;
 
 enum direction_t { UP, RIGHT, DOWN, LEFT };
 
+struct bend { unsigned at_length; direction_t dir; };
+
 const unsigned FIELD_WIDTH = 120;
 const unsigned FIELD_HEIGHT = 120;
 const unsigned SNAKE_THICKNESS = FIELD_WIDTH / 15;
@@ -20,34 +22,58 @@ std::atomic_bool is_game_active = false;
 int snake_head_x = FIELD_WIDTH / 2;
 int snake_head_y = FIELD_HEIGHT / 2;
 unsigned snake_length = 16;
-direction_t snake_dir = RIGHT;
+std::vector<bend> snake_bends = {
+  { 0, RIGHT }, { snake_length, RIGHT }
+}; // first element is the perceived snake_dir
+
 
 Canvas game_canvas;
 auto move_snake = [](App* app) {
   while(is_game_active.load()) {
     game_canvas = Canvas(FIELD_WIDTH, FIELD_HEIGHT);
-    int snake_tail_x;
-    int snake_tail_y;
 
-    switch (snake_dir) {
-      case UP: snake_tail_x = snake_head_x; snake_tail_y = snake_head_y + snake_length; break;
-      case RIGHT: snake_tail_x = snake_head_x + snake_length; snake_tail_y = snake_head_y; break;
-      case DOWN: snake_tail_x = snake_head_x; snake_tail_y = snake_head_y - snake_length; break;
-      case LEFT: snake_tail_x = snake_head_x + snake_length; snake_tail_y = snake_head_y;
-    }
+    int seg_start_x = snake_head_x;
+    int seg_start_y = snake_head_y;
+    int seg_end_x;
+    int seg_end_y;
 
-    for (int i = -4; i + 4 < SNAKE_THICKNESS; ++i)
-      switch (snake_dir) {
-        case UP:
-        case DOWN:
-          game_canvas.DrawBlockLine(snake_head_x + i, snake_head_y, snake_tail_x + i, snake_tail_y);
-          break;
-        case RIGHT:
-        case LEFT:
-          game_canvas.DrawBlockLine(snake_head_x, snake_head_y + i, snake_tail_x, snake_tail_y + i);
+    // draw the snake as is
+    std::vector<bend>::iterator bend_it;
+    for (bend_it = snake_bends.begin(); bend_it < snake_bends.end() - 1; ++bend_it) {
+      unsigned segment_length = (bend_it + 1)->at_length - bend_it->at_length;
+
+      switch (bend_it->dir) {
+        case UP: seg_end_x = seg_start_x; seg_end_y = seg_end_y + segment_length; break;
+        case RIGHT: seg_end_x = seg_start_x + segment_length; seg_end_y = seg_start_y; break;
+        case DOWN: seg_end_x = seg_start_x; seg_end_y = seg_start_y - segment_length; break;
+        case LEFT: seg_end_x = seg_start_x + segment_length; seg_end_y = seg_start_y;
       }
 
-    ++snake_head_x;
+      for (int i = -4; i + 4 < SNAKE_THICKNESS; ++i)
+        switch (bend_it->dir) {
+          case UP:
+          case DOWN:
+            game_canvas.DrawBlockLine(seg_start_x + i, seg_start_y, seg_end_x + i, seg_end_y);
+            break;
+          case RIGHT:
+          case LEFT:
+            game_canvas.DrawBlockLine(seg_start_x, seg_start_y + i, seg_end_x, seg_end_y + i);
+        }
+
+      seg_start_x = seg_end_x;
+      seg_start_y = seg_end_y;
+    }
+
+    // move the snake for the next drawing
+    bend_it = snake_bends.begin();
+    switch (bend_it->dir) {
+      case UP: --snake_head_y; break;
+      case RIGHT: ++snake_head_x; break;
+      case DOWN: ++snake_head_y; break;
+      case LEFT: --snake_head_x;
+    }
+    for (++bend_it; bend_it < snake_bends.end() - 1; ++bend_it) ++bend_it->at_length;
+    if ((bend_it - 1)->at_length == bend_it->at_length) snake_bends.pop_back();
 
     app->PostEvent(Event::Custom);
 
@@ -76,7 +102,9 @@ void start_game(App* app) {
   snake_head_x = FIELD_WIDTH / 2;
   snake_head_y = FIELD_HEIGHT / 2;
   snake_length = 16;
-  snake_dir = RIGHT;
+  snake_bends = {
+    { 0, RIGHT }, { snake_length, RIGHT }
+  }; // first element is the perceived snake_dir
 
   game_task = std::async(std::launch::async, move_snake, app);
 }
