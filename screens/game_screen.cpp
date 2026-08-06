@@ -84,7 +84,7 @@ auto move_snake = [](App* app) {
 std::future<void> game_task;
 
 Component game_screen(App& app) {
-  return CatchEvent(Renderer([&] {
+  return CatchEvent(Renderer([&](bool focused) {
     return hbox({
       filler(),
       canvas(&game_canvas)
