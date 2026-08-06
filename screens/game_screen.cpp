@@ -1,6 +1,7 @@
 #include <vector>
 #include <atomic>
 #include <future>
+#include <tuple>
 
 #include <ftxui/component/app.hpp>
 #include <ftxui/component/component.hpp>
@@ -12,7 +13,7 @@ using namespace ftxui;
 
 enum direction_t { UP, RIGHT, DOWN, LEFT };
 
-struct bend { unsigned at_length; direction_t dir; };
+typedef std::tuple<unsigned, direction_t> bend;
 
 const unsigned FIELD_WIDTH = 120;
 const unsigned FIELD_HEIGHT = 120;
@@ -23,7 +24,7 @@ int snake_head_x = FIELD_WIDTH / 2;
 int snake_head_y = FIELD_HEIGHT / 2;
 unsigned snake_length = 16;
 std::vector<bend> snake_bends = {
-  { 0, RIGHT }, { snake_length, RIGHT }
+  bend(0, RIGHT), bend(snake_length, RIGHT)
 }; // first element is the perceived snake_dir
 
 
@@ -40,17 +41,17 @@ auto move_snake = [](App* app) {
     // draw the snake as is
     std::vector<bend>::iterator bend_it;
     for (bend_it = snake_bends.begin(); bend_it < snake_bends.end() - 1; ++bend_it) {
-      unsigned segment_length = (bend_it + 1)->at_length - bend_it->at_length;
+      unsigned segment_length = std::get<0>(*(bend_it + 1)) - std::get<0>(*bend_it);
 
-      switch (bend_it->dir) {
-        case UP: seg_end_x = seg_start_x; seg_end_y = seg_end_y + segment_length; break;
-        case RIGHT: seg_end_x = seg_start_x + segment_length; seg_end_y = seg_start_y; break;
+      switch (std::get<1>(*bend_it)) {
+        case UP: seg_end_x = seg_start_x; seg_end_y = seg_start_y + segment_length; break;
+        case RIGHT: seg_end_x = seg_start_x - segment_length; seg_end_y = seg_start_y; break;
         case DOWN: seg_end_x = seg_start_x; seg_end_y = seg_start_y - segment_length; break;
         case LEFT: seg_end_x = seg_start_x + segment_length; seg_end_y = seg_start_y;
       }
 
       for (int i = -4; i + 4 < SNAKE_THICKNESS; ++i)
-        switch (bend_it->dir) {
+        switch (std::get<1>(*bend_it)) {
           case UP:
           case DOWN:
             game_canvas.DrawBlockLine(seg_start_x + i, seg_start_y, seg_end_x + i, seg_end_y);
@@ -66,14 +67,14 @@ auto move_snake = [](App* app) {
 
     // move the snake for the next drawing
     bend_it = snake_bends.begin();
-    switch (bend_it->dir) {
+    switch (std::get<1>(*bend_it)) {
       case UP: --snake_head_y; break;
       case RIGHT: ++snake_head_x; break;
       case DOWN: ++snake_head_y; break;
       case LEFT: --snake_head_x;
     }
-    for (++bend_it; bend_it < snake_bends.end() - 1; ++bend_it) ++bend_it->at_length;
-    if ((bend_it - 1)->at_length == bend_it->at_length) snake_bends.pop_back();
+    for (++bend_it; bend_it < snake_bends.end() - 1; ++bend_it) ++std::get<0>(*bend_it);
+    if (std::get<0>(*(bend_it - 1)) == std::get<0>(*bend_it)) snake_bends.pop_back();
 
     app->PostEvent(Event::Custom);
 
@@ -83,7 +84,7 @@ auto move_snake = [](App* app) {
 std::future<void> game_task;
 
 Component game_screen(App& app) {
-  return Renderer([&] {
+  return CatchEvent(Renderer([&] {
     return hbox({
       filler(),
       canvas(&game_canvas)
@@ -93,6 +94,57 @@ Component game_screen(App& app) {
         | border,
       filler()
     });
+  }), [&](Event event) {
+    if (event == Event::ArrowUp) {
+      switch (std::get<1>(snake_bends[0])) {
+        // undo snake movement
+        case RIGHT: --snake_head_x; break;
+        case LEFT: ++snake_head_x; break;
+        default: return false;
+      }
+      --snake_head_y; // turn up
+      ++std::get<0>(snake_bends[0]);
+      snake_bends.emplace(snake_bends.begin(), 0, UP);
+      return true;
+    }
+
+    if (event == Event::ArrowRight) {
+      switch (std::get<1>(snake_bends[0])) {
+        case UP: ++snake_head_y; break;
+        case DOWN: --snake_head_y; break;
+        default: return false;
+      }
+      ++snake_head_x;
+      ++std::get<0>(snake_bends[0]);
+      snake_bends.emplace(snake_bends.begin(), 0, RIGHT);
+      return true;
+    }
+
+    if (event == Event::ArrowDown) {
+      switch (std::get<1>(snake_bends[0])) {
+        case RIGHT: --snake_head_x; break;
+        case LEFT: ++snake_head_x; break;
+        default: return false;
+      }
+      ++snake_head_y;
+      ++std::get<0>(snake_bends[0]);
+      snake_bends.emplace(snake_bends.begin(), 0, DOWN);
+      return true;
+    }
+
+    if (event == Event::ArrowLeft) {
+      switch (std::get<1>(snake_bends[0])) {
+        case UP: ++snake_head_y; break;
+        case DOWN: --snake_head_y; break;
+        default: return false;
+      }
+      --snake_head_x;
+      ++std::get<0>(snake_bends[0]);
+      snake_bends.emplace(snake_bends.begin(), 0, LEFT);
+      return true;
+    }
+
+    return false;
   });
 }
 
